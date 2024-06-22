@@ -1,4 +1,5 @@
 use std::net::SocketAddr;
+use std::thread;
 use std::{
     io::{prelude::*, BufReader},
     net::{TcpListener, TcpStream},
@@ -9,11 +10,11 @@ fn main() {
     let listener = TcpListener::bind(&addrs[..]).expect("Failed to bind to address");
     for stream in listener.incoming() {
         let stream = stream.unwrap();
-        handle_connection(stream);
+        thread::spawn(|| {
+            handle_connection(stream);
+        });
     }
 }
-
-// Simple server implementation that logs a message to stout confirming an incoming connection
 fn handle_connection(mut client_stream: TcpStream) {
     let buf_reader = BufReader::new(&mut client_stream);
     let http_request: Vec<_> = buf_reader
