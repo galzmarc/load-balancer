@@ -6,7 +6,7 @@ use std::{
 
 fn main() {
     let addrs = [SocketAddr::from(([127, 0, 0, 1], 7878))];
-    let listener = TcpListener::bind(&addrs[..]).unwrap();
+    let listener = TcpListener::bind(&addrs[..]).expect("Failed to bind to address");
     for stream in listener.incoming() {
         let stream = stream.unwrap();
         handle_connection(stream);
@@ -31,7 +31,7 @@ fn handle_connection(mut client_stream: TcpStream) {
     backend_stream.write_all(http_request.as_bytes()).unwrap();
 
     // Read the response from the backend server
-    let mut response= Vec::new();
+    let mut response = Vec::new();
     backend_stream.read_to_end(&mut response).unwrap();
 
     // Send the response back to the client
