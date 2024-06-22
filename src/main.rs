@@ -1,12 +1,12 @@
-use std::io::BufRead;
+use std::net::SocketAddr;
 use std::{
-    io::BufReader,
+    io::{prelude::*, BufReader},
     net::{TcpListener, TcpStream},
 };
 
 fn main() {
-    let listener = TcpListener::bind("127.0.0.1:7878").unwrap();
-
+    let addrs = [SocketAddr::from(([127, 0, 0, 1], 7878))];
+    let listener = TcpListener::bind(&addrs[..]).unwrap();
     for stream in listener.incoming() {
         let stream = stream.unwrap();
         handle_connection(stream);
@@ -14,15 +14,26 @@ fn main() {
 }
 
 // Simple server implementation that logs a message to stout confirming an incoming connection
-fn handle_connection(mut stream: TcpStream) {
-    let buf_reader = BufReader::new(&mut stream);
+fn handle_connection(mut client_stream: TcpStream) {
+    let buf_reader = BufReader::new(&mut client_stream);
     let http_request: Vec<_> = buf_reader
         .lines()
         .map(|result| result.unwrap())
         .take_while(|line| !line.is_empty())
         .collect();
 
-    for req in http_request {
-        println!("{req:#?}");
-    }
+    // Combine the HTTP request lines into a single string,
+    // as backend server expects to receive the entire HTTP request formatted as such
+    let http_request = http_request.join("\r\n") + "\r\n\r\n";
+
+    // Forward the request to backend server
+    let mut backend_stream = TcpStream::connect("127.0.0.1:8080").unwrap();
+    backend_stream.write_all(http_request.as_bytes()).unwrap();
+
+    // Read the response from the backend server
+    let mut response= Vec::new();
+    backend_stream.read_to_end(&mut response).unwrap();
+
+    // Send the response back to the client
+    client_stream.write_all(&response).unwrap();
 }
