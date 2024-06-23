@@ -5,14 +5,23 @@ use std::{
     net::{TcpListener, TcpStream},
 };
 
+use load_balancer::ThreadPool;
+
 fn main() {
     let addrs = [SocketAddr::from(([127, 0, 0, 1], 7878))];
     let listener = TcpListener::bind(&addrs[..]).expect("Failed to bind to address");
+    let pool = ThreadPool::new(4);
     for stream in listener.incoming() {
-        let stream = stream.unwrap();
-        thread::spawn(|| {
-            handle_connection(stream);
-        });
+        match stream {
+            Ok(stream) => {
+                pool.execute(|| {
+                    handle_connection(stream);
+                });
+            }
+            Err(e) => {
+                eprintln!("Failed to handle connection: {}", e);
+            }
+        }
     }
 }
 fn handle_connection(mut client_stream: TcpStream) {
