@@ -1,5 +1,6 @@
+use std::collections::VecDeque;
 use std::net::SocketAddr;
-use std::thread;
+use std::sync::{Arc, Mutex};
 use std::{
     io::{prelude::*, BufReader},
     net::{TcpListener, TcpStream},
@@ -7,23 +8,36 @@ use std::{
 
 use load_balancer::ThreadPool;
 
+type Queue = Arc<Mutex<VecDeque<TcpStream>>>;
+
 fn main() {
     let addrs = [SocketAddr::from(([127, 0, 0, 1], 7878))];
     let listener = TcpListener::bind(&addrs[..]).expect("Failed to bind to address");
     let pool = ThreadPool::new(4);
+    let request_queue: Queue = Arc::new(Mutex::new(VecDeque::new()));
+
     for stream in listener.incoming() {
         match stream {
             Ok(stream) => {
-                pool.execute(|| {
-                    handle_connection(stream);
+                let queue_clone = Arc::clone(&request_queue);
+                pool.execute(move || {
+                    let mut queue = queue_clone.lock().unwrap();
+                    queue.push_back(stream);
+                    drop(queue); // Explicitly dropping the lock
+
+                    let mut queue = queue_clone.lock().unwrap();
+                    if let Some(stream) = queue.pop_front() {
+                        handle_connection(stream);
+                    }
                 });
             }
             Err(e) => {
-                eprintln!("Failed to handle connection: {}", e);
+                eprintln!("Failed to accept connection: {}", e);
             }
         }
     }
 }
+
 fn handle_connection(mut client_stream: TcpStream) {
     let buf_reader = BufReader::new(&mut client_stream);
     let http_request: Vec<_> = buf_reader
