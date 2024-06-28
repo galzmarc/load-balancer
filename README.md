@@ -1,6 +1,6 @@
 # Rust Load Balancer
 
-### Overview
+## Overview
 
 This project is a simple yet effective load balancer implemented in Rust. It uses a round-robin algorithm to distribute incoming HTTP requests to a set of backend servers. The load balancer is multi-threaded, using a thread pool to handle incoming connections concurrently.
 
@@ -11,7 +11,7 @@ This project is a simple yet effective load balancer implemented in Rust. It use
 - **Queue-based Connection Management:** Efficiently manages incoming connections by placing them in a queue, ensuring orderly processing and preventing overload during high traffic periods.
 - **Dynamic Backend Management:** Allows adding and removing backend servers dynamically (work in progress).
 
-## Configuration
+### Configuration
 
 Currently, the load balancer is configured in the `main.rs` file. You can modify the following:
 
@@ -45,7 +45,6 @@ Explanation of Key Parts
 - Asynchronous I/O: Switch to asynchronous I/O for better performance and scalability.
 - Configuration Management: Allow dynamic updating of backend servers without restarting the load balancer.
 - Add HTTPS support
-
 
 ### Contribution
 
