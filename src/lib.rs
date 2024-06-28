@@ -1,3 +1,4 @@
+use std::net::SocketAddr;
 use std::{
     sync::{mpsc, Arc, Mutex},
     thread,
@@ -62,5 +63,41 @@ impl Drop for ThreadPool {
                 thread.join().unwrap();
             }
         }
+    }
+}
+
+#[derive(Clone)]
+pub struct Server {
+    pub addr: SocketAddr,
+}
+
+impl Server {
+    pub fn new(addr: SocketAddr) -> Self {
+        Server { addr }
+    }
+}
+
+pub struct RoundRobin {
+    servers: Vec<Server>,
+    index: usize,
+}
+
+impl RoundRobin {
+    pub fn new() -> Self {
+        RoundRobin {
+            servers: vec![],
+            index: 0,
+        }
+    }
+    pub fn insert_server(&mut self, server: Server) {
+        self.servers.push(server)
+    }
+    pub fn next(&mut self) -> Option<Server> {
+        if self.servers.is_empty() {
+            return None;
+        }
+        let server = &self.servers[self.index];
+        self.index = (self.index + 1) % self.servers.len();
+        Some(server.clone())
     }
 }
