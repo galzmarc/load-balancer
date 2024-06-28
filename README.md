@@ -1,10 +1,8 @@
 # Rust Load Balancer
 
-## Overview
-
 This project is a simple yet effective load balancer implemented in Rust. It uses a round-robin algorithm to distribute incoming HTTP requests to a set of backend servers. The load balancer is multi-threaded, using a thread pool to handle incoming connections concurrently.
 
-### Features
+## Features
 
 - **Round-Robin Load Balancing:** Distributes requests evenly across backend servers.
 - **Thread Pool:** Handles multiple connections concurrently for better performance.
