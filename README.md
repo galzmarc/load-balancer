@@ -12,8 +12,8 @@ This project is a simple load balancer implemented in Rust. It uses a round-robi
 
 ### Code Structure
 
-main.rs: The entry point of the application. Sets up the listener, thread pool, request queue, and backend servers.
-lib.rs: Contains the implementation of the ThreadPool, Worker, Server, and RoundRobin structs, along with their associated methods.
+- main.rs: The entry point of the application. Sets up the listener, thread pool, request queue, and backend servers.
+- lib.rs: Contains the implementation of the ThreadPool, Worker, Server, and RoundRobin structs, along with their associated methods.
 Explanation of Key Parts
 
 #### main.rs
